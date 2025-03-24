@@ -1,3 +1,4 @@
+
 ### 前言
 
 在移动端下拉刷新和上拉加载属于高频使用的功能，目前官方提供的Refresh组件自定义效果有限，很难满足各家产品个性化定制的要求。下面我们从0到1打造一个无入侵性、可自定义扩展的下拉刷新组件
@@ -6,7 +7,7 @@
 
 [v1装饰器版本](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh)
 
-[v2装饰器版本](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh_v2)\
+[v2装饰器版本](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh_v2)
 [404点这里](https://gitee.com/zhongrui_developer/PullToRefresh/tree/master_v2/)
 
 ### 目标特点
@@ -125,12 +126,12 @@ onPlaceChildren(selfLayoutInfo: GeometryInfo, children: Layoutable[], constraint
 
 ```
 
-此时已完成初始的布局逻辑(细心的你可能会发现一个问题，这里先挖个坑，后面细说)\
+此时已完成初始的布局逻辑(细心的你可能会发现一个问题，这里先挖个坑，后面细说)
 接下来实现视图跟随手势实现下拉效果
 
 ### 第2步实现下拉
 
-1：content视图通过parallelGesture属性绑定PanGesture拖动手势\
+1：content视图通过parallelGesture属性绑定PanGesture拖动手势
 2：记录每次拖动手势的偏移量，header和content视图通过offset属性设置Y轴偏移量达到下拉效果
 
     //header和content视图的偏移量(视图回弹动画需要)
@@ -188,17 +189,17 @@ onPlaceChildren(selfLayoutInfo: GeometryInfo, children: Layoutable[], constraint
 
 1：给content视图设置onTouch事件监听,触发up和cancel事件时，执行回弹动画
 
-看到这里是不是有个疑问，明明PanGesture有onActionEnd和onActionCancel事件，\
-在onActionEnd里面执行回弹动画不行吗？\
+看到这里是不是有个疑问，明明PanGesture有onActionEnd和onActionCancel事件，
+在onActionEnd里面执行回弹动画不行吗？
 为什么还需要监听onTouch事件？
 
-首先触发PanGesture事件是有条件的，拖动手势必须有一小段偏移量，才能触发onActionStart事件\
-后续才有onActionUpdate、onActionEnd事件\
+首先触发PanGesture事件是有条件的，拖动手势必须有一小段偏移量，才能触发onActionStart事件
+后续才有onActionUpdate、onActionEnd事件
 也就是说触摸不一定有onActionStart事件，释放不一定有onActionEnd事件
 
-**举个例子**：\
-当视图下拉过程松手，此时视图需要回弹，在视图回弹过程中，立刻触摸视图(只是按下，不拖动手势)\
-此时回弹动画需要停止，然后再松手(此时是不会触发onActionEnd事件)，但是视图需要继续回弹\
+**举个例子**：
+当视图下拉过程松手，此时视图需要回弹，在视图回弹过程中，立刻触摸视图(只是按下，不拖动手势)
+此时回弹动画需要停止，然后再松手(此时是不会触发onActionEnd事件)，但是视图需要继续回弹
 那么只能通过监听onTouch的up和cancel事件来执行回弹动画了
 
     import animator from '@ohos.animator'
@@ -253,30 +254,30 @@ onPlaceChildren(selfLayoutInfo: GeometryInfo, children: Layoutable[], constraint
       }
     })
 
-看到这里，细心的你肯定又发现问题了\
-触摸视图时暂停动画为什么要用cancel()不用pause()?\
-如果触摸时用pause()，不拖动手势的情况下再次释放是没什么问题的\
-如果触摸时通过pause()暂停动画，再拖动视图(视图总偏移量发生变化)，\
-再次释放时就需要重新执行回弹动画，否则回弹就会出问题，\
-因为此时的视图总偏移量发生了变化，继续执行动画，onFrame监听中的progress进度还是延续上次的\
+看到这里，细心的你肯定又发现问题了
+触摸视图时暂停动画为什么要用cancel()不用pause()?
+如果触摸时用pause()，不拖动手势的情况下再次释放是没什么问题的
+如果触摸时通过pause()暂停动画，再拖动视图(视图总偏移量发生变化)，
+再次释放时就需要重新执行回弹动画，否则回弹就会出问题，
+因为此时的视图总偏移量发生了变化，继续执行动画，onFrame监听中的progress进度还是延续上次的
 这样就会导致动画回弹不连续
 
-**举个例子：**\
-开始回弹时，视图的总偏移量为100px，回弹动画进度到0.5时(onFrame监听中的progress)，\
-触摸视图暂停动画，此时视图的偏移量为：50px\
-然后拖动视图，使总偏移量达到100px,此时释放触发up事件时，\
-如果继续上次动画，那么progress可能为0.51，\
-onFrame监听中计算的视图偏移量就为100px\*0.51=51px,\
+**举个例子：**
+开始回弹时，视图的总偏移量为100px，回弹动画进度到0.5时(onFrame监听中的progress)，
+触摸视图暂停动画，此时视图的偏移量为：50px
+然后拖动视图，使总偏移量达到100px,此时释放触发up事件时，
+如果继续上次动画，那么progress可能为0.51，
+onFrame监听中计算的视图偏移量就为100px*0.51=51px,
 此时视图会突然从偏移量100px变到51px,产生回弹动画不连续问题
 
-此时已完成视图回弹至顶部的效果，\
+此时已完成视图回弹至顶部的效果，
 接下来实现触发刷新和修改视图回弹时保留header视图高度效果
 
 ### 第4步触发刷新，显示header刷新视图
 
-下拉视图时，根据偏移量不同，显示的状态也不同\
-比如下拉距离<=100vp时，显示"下拉刷新"\
-下拉距离>=100vp时，显示"释放立即刷新"\
+下拉视图时，根据偏移量不同，显示的状态也不同
+比如下拉距离<=100vp时，显示"下拉刷新"
+下拉距离>=100vp时，显示"释放立即刷新"
 达到刷新条件，释放手势，执行回弹动画时，保留header高度的视图，显示"正在刷新"
 
     外部设置开始刷新的回调
@@ -361,9 +362,9 @@ onFrame监听中计算的视图偏移量就为100px\*0.51=51px,\
 
 ### 第6步解决上滑再下拉,header会往下偏移问题
 
-当内容视图是List或者其他可滑动列表时\
-将列表内容往上滑动，再下拉列表时，header视图会向下偏移\
-产生这个问题的原因是下滑过程没有判断列表内容是否到顶\
+当内容视图是List或者其他可滑动列表时
+将列表内容往上滑动，再下拉列表时，header视图会向下偏移
+产生这个问题的原因是下滑过程没有判断列表内容是否到顶
 所以导致拖动手势对header做了向下偏移的操作
 
 解决办法：
@@ -423,7 +424,7 @@ onFrame监听中计算的视图偏移量就为100px\*0.51=51px,\
 
 ### 第7步解决下拉再上拉,列表内容会滑动问题
 
-当内容视图是List或者其他可滑动列表时\
+当内容视图是List或者其他可滑动列表时
 将组件往下拉显示header视图后，再上滑时，列表内容会往上滑动
 
 解决办法：上滑隐藏header视图时，通过Scroller设置列表滑动距离为0
@@ -467,13 +468,13 @@ if (this.currentOffsetY > 0 && this.preOffsetY>event.offsetY) {
       .edgeEffect(EdgeEffect.None)  
     }
 
-细心的你可能又发现了，为什么自定义组件用到了clip(true)属性？\
-这是为了解决在第1步自定义布局产生的一个问题\
+细心的你可能又发现了，为什么自定义组件用到了clip(true)属性？
+这是为了解决在第1步自定义布局产生的一个问题
 当header视图布局位置超出组件范围时(组件位置未超出屏幕时)，是可以看见的，所以需要设置clip(true)来解决这个问题
 
-此时已完成下拉刷新的基础逻辑，此时的你可能还有不少疑问\
-比如为什么只有下拉刷新，说好的上拉加载呢？\
-其实上拉加载的逻辑和下拉刷新类似，一个下拉，一个上拉\
+此时已完成下拉刷新的基础逻辑，此时的你可能还有不少疑问
+比如为什么只有下拉刷新，说好的上拉加载呢？
+其实上拉加载的逻辑和下拉刷新类似，一个下拉，一个上拉
 能理解下拉的实现逻辑和原理，上拉加载的也就会了
 
 ***
@@ -482,16 +483,16 @@ if (this.currentOffsetY > 0 && this.preOffsetY>event.offsetY) {
 
 ### 项目源码
 
-**[-->v1使用教程](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh)**\
+**[-->v1使用教程](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh)**
 <https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh>
 
-**[-->v2使用教程](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh_v2)**\
+**[-->v2使用教程](https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh_v2)**
 <https://ohpm.openharmony.cn/#/cn/detail/@zhongrui%2Fpull_to_refresh_v2>
 
-**[-->源码地址](https://gitee.com/zhongrui_developer/PullToRefresh)**\
+**[-->源码地址](https://gitee.com/zhongrui_developer/PullToRefresh)**
 <https://gitee.com/zhongrui_developer/PullToRefresh>
 
-(ps：大佬\~点个关注吧，主页还有其他技术方案，后续会发布如何优雅的实现列表无感知加载下一页的文章)
+(ps：大佬~点个关注吧，主页还有其他技术方案，后续会发布如何优雅的实现列表无感知加载下一页的文章)
 
 ### 历史文章
 
